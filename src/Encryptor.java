@@ -39,7 +39,7 @@ public class Encryptor {
                 write.close();
                 System.out.println("File successfully encrypted");
             }catch (IOException e) {
-                System.out.println("Error write");
+                System.out.println("Error writing to file");
                 encrypt(algorithm, file, key, iv);
             }
             
