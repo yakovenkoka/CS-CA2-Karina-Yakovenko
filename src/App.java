@@ -23,7 +23,6 @@ public class App {
                     case 1:
                         System.out.println("Enter the filename to encrypt:");
                         String encryptFilename = kb.next();
-                        AESUtil.encryptFile(encryptFilename);
                         break;
                     case 2:
                         System.out.println("Enter the filename to decrypt:");
