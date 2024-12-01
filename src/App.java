@@ -1,13 +1,25 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+
 public class App {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
         Scanner kb = new Scanner(System.in);
         String[] menuOptions = {
-            "Exit",
-            "Encrypt a File",
-            "Decrypt a File"
+                "Exit",
+                "Encrypt a File",
+                "Decrypt a File"
         };
 
         int menuChoice = -1;
@@ -23,7 +35,25 @@ public class App {
                     case 1:
                         System.out.println("Enter the filename to encrypt:");
                         String encryptFilename = kb.next();
+                        File fileToEncrypt = new File(encryptFilename);
+
+                        if (!fileToEncrypt.exists()) {
+                            System.out.println("Error: File not found.");
+                            break;
+                        }
+
+                        try {
+                            SecretKey key = AESUtil.generateKey(128);
+                            IvParameterSpec iv = AESUtil.generateIv();
+                            Encryptor.encrypt("AES/CBC/PKCS5Padding", fileToEncrypt, key, iv);
+                            System.out.println("File encrypted successfully.");
+                        } catch (InvalidKeyException | NoSuchPaddingException | NoSuchAlgorithmException
+                                | InvalidAlgorithmParameterException | BadPaddingException
+                                | IllegalBlockSizeException e) {
+                            System.out.println("Encryption error: " + e.getMessage());
+                        }
                         break;
+
                     case 2:
                         System.out.println("Enter the filename to decrypt:");
                         String decryptFilename = kb.next();
@@ -34,7 +64,7 @@ public class App {
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input. Please enter a valid option.");
-                kb.next(); 
+                kb.next();
             }
         } while (menuChoice != 0);
     }
@@ -61,7 +91,7 @@ public class App {
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input. Please enter a number.");
-                scanner.next(); 
+                scanner.next();
             }
         }
         return choice;
