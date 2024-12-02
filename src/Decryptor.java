@@ -25,22 +25,31 @@ public class Decryptor {
         try {
             Scanner scanner = new Scanner(System.in);
             Scanner read = new Scanner(file);
+
+            // Read the file content 
             String input = "";
             while (read.hasNextLine()) {
                 input += read.nextLine();
             }
+
+            // Ask the user for the key to decrypt the file
             System.out.println("Please enter a key to decrypt a file: ");
 
+            // Read the key from the user
             String keyString = scanner.nextLine();
 
+            // Convert the String key to a SecretKey object 
             byte[] decodedKey = Base64.getDecoder().decode(keyString);
             SecretKey key = new SecretKeySpec(decodedKey, "AES");
 
+            // Decrypt the file using the key and the IV
+            //source: https://www.baeldung.com/java-aes-encryption-decryption
             Cipher cipher = Cipher.getInstance(algorithm);
             cipher.init(Cipher.DECRYPT_MODE, key, iv);
+            // Decrypt the file content 
             byte[] plainText = cipher.doFinal(Base64.getDecoder().decode(input));
             String result = new String(plainText, StandardCharsets.UTF_8);
-
+            // Write the decrypted content to a new file
             try {
                 FileWriter write = new FileWriter("plaintext.txt");
                 write.write(new String(result));
@@ -50,7 +59,7 @@ public class Decryptor {
                 System.out.println("Error writing to file");
             }
         } catch (Exception e) {
-            System.out.println("Decryption failed");
+            System.out.println("Decryption failed. Invalid key.");
             decrypt(algorithm, file, iv);
         }
 
