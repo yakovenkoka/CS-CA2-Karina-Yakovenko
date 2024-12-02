@@ -14,7 +14,10 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 public class App {
+
+    // Stores the IvParameterSpec for the encryption/decryption process to use the same Initialization Vector for both operations
     private static IvParameterSpec IV;
+
     public static void main(String[] args) throws FileNotFoundException {
 
         Scanner kb = new Scanner(System.in);
@@ -26,6 +29,7 @@ public class App {
 
         int menuChoice = -1;
 
+        // Main menu loop
         do {
             displayMenu(menuOptions, "--- Menu ---");
             try {
@@ -35,47 +39,74 @@ public class App {
                         System.out.println("Exiting the program.");
                         break;
                     case 1:
-                        System.out.println("Enter the filename to encrypt:");
-                        String encryptFilename = kb.next();
-                        File fileToEncrypt = new File(encryptFilename);
+                        // Encrypt a file 
+                        while (true) {
+                            System.out.println(
+                                    "Enter the filename to encrypt (or type 'back' to return to the main menu):");
+                            String encryptFilename = kb.next();
 
-                        if (!fileToEncrypt.exists()) {
-                            System.out.println("Error: File not found.");
+                            // Return to the main menu if the user types 'back' 
+                            if (encryptFilename.equals("back")) {
+                                break;
+                            }
+
+                            File fileToEncrypt = new File(encryptFilename);
+
+                            // Check if the file exists
+                            if (!fileToEncrypt.exists()) {
+                                System.out.println("Error: File not found.");
+                                continue;
+                            }
+
+                            try {
+                                // Generate AES encryption key (128 bits)
+                                SecretKey key = AESUtil.generateKey(128);
+                                // Generate Initialization Vector
+                                IV = AESUtil.generateIv();
+
+                                // Encrypt the file using the provided key and IV
+                                Encryptor.encrypt("AES/CBC/PKCS5Padding", fileToEncrypt, key, IV);
+                                System.out.println("File encrypted successfully.");
+                            } catch (InvalidKeyException | NoSuchPaddingException | NoSuchAlgorithmException
+                                    | InvalidAlgorithmParameterException | BadPaddingException
+                                    | IllegalBlockSizeException e) {
+                                System.out.println("Encryption error: " + e.getMessage());
+                            }
                             break;
-                        }
-
-                        try {
-                            SecretKey key = AESUtil.generateKey(128);
-                            IV = AESUtil.generateIv();
-                            Encryptor.encrypt("AES/CBC/PKCS5Padding", fileToEncrypt, key, IV);
-                            System.out.println("File encrypted successfully.");
-                        } catch (InvalidKeyException | NoSuchPaddingException | NoSuchAlgorithmException
-                                | InvalidAlgorithmParameterException | BadPaddingException
-                                | IllegalBlockSizeException e) {
-                            System.out.println("Encryption error: " + e.getMessage());
                         }
                         break;
 
                     case 2:
-                    
-                        System.out.println("Enter the filename to decrypt:");
-                        String decryptFilename = kb.next();
-                        File fileToDecrypt = new File(decryptFilename);
+                        // Decrypt a file
+                        while (true) {
+                            System.out.println("Enter the filename to decrypt (or type 'back' to return to the main menu):");
+                            String decryptFilename = kb.next();
 
-                        if(!fileToDecrypt.exists()) {
-                            System.out.println("Error: File not found.");
+                            // Return to the main menu if the user types 'back'
+                            if (decryptFilename.equals("back")) {
+                                break;
+                            }
+                            File fileToDecrypt = new File(decryptFilename);
+
+                            // Check if the file exists
+                            if (!fileToDecrypt.exists()) {
+                                System.out.println("Error: File not found.");
+                                continue;
+                            }
+
+                            try {
+                                // Decrypt the file using the provided IV
+                                // The key is entered by the user during the decryption process 
+                                Decryptor.decrypt("AES/CBC/PKCS5Padding", fileToDecrypt, IV);
+                            } catch (InvalidKeyException | NoSuchPaddingException | NoSuchAlgorithmException
+                                    | InvalidAlgorithmParameterException | BadPaddingException
+                                    | IllegalBlockSizeException e) {
+                                System.out.println("Encryption error: " + e.getMessage());
+                            }
                             break;
                         }
-
-                        try {
-                            Decryptor.decrypt("AES/CBC/PKCS5Padding", fileToDecrypt, IV);
-                        } catch (InvalidKeyException | NoSuchPaddingException | NoSuchAlgorithmException
-                                | InvalidAlgorithmParameterException | BadPaddingException
-                                | IllegalBlockSizeException e) {
-                            System.out.println("Encryption error: " + e.getMessage());
-                        }
-                        
                         break;
+
                     default:
                         System.out.println("Invalid choice. Try again.");
                         break;
@@ -87,6 +118,7 @@ public class App {
         } while (menuChoice != 0);
     }
 
+    // Display the menu options to the user 
     public static void displayMenu(String[] menuOptions, String menuTitle) {
         System.out.println("\n" + menuTitle);
         System.out.println("Please select an option:");
@@ -95,6 +127,7 @@ public class App {
         }
     }
 
+    // Get the user's choice from the menu options 
     public static int getUserChoice(int numItems) {
         Scanner scanner = new Scanner(System.in);
         int choice = -1;

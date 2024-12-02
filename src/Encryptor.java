@@ -22,17 +22,24 @@ public class Encryptor {
 
         try {
             Scanner read = new Scanner(file);
+
+            // Read the file content to encrypt
             String input = "";
             while (read.hasNextLine()) {
                 input += read.nextLine();
             }
 
+            //Display the encryption key to the user
             System.out.println("Key : " + Base64.getEncoder().encodeToString(key.getEncoded()));
 
+            //Configure the cipher to encrypt the file
+            //source: https://www.baeldung.com/java-aes-encryption-decryption
             Cipher cipher = Cipher.getInstance(algorithm);
             cipher.init(Cipher.ENCRYPT_MODE, key, iv);
+            //Encrypt the file content
             byte[] cipherText = cipher.doFinal(input.getBytes());
             String result  = Base64.getEncoder().encodeToString(cipherText);
+            //Write the encrypted content to a new file
             try{
                 FileWriter write = new FileWriter("ciphertext.txt");
                 write.write(result);
